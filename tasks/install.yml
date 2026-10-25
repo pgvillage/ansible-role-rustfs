@@ -1,0 +1,33 @@
+---
+- name: Install minio packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: "{{ minio_package_state }}"
+  with_items: "{{ minio_package_names }}"
+
+- name: Generate the Minio server envfile
+  ansible.builtin.template:
+    src: minio.env.j2
+    dest: "{{ minio_server_envfile }}"
+    owner: "root"
+    group: "{{ minio_group }}"
+    mode: "0640"
+  notify: Restart minio
+
+- name: Create the Minio server systemd config
+  ansible.builtin.template:
+    src: minio.service.j2
+    dest: "/etc/systemd/system/{{ minio_service_name }}.service"
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  when: ansible_facts.service_mgr == "systemd"
+
+- name: Create the Minio server init.d config
+  ansible.builtin.template:
+    src: minio.init.j2
+    dest: "/etc/init.d/{{ minio_service_name }}"
+    owner: "root"
+    group: "root"
+    mode: "0750"
+  when: ansible_facts.service_mgr != "systemd"

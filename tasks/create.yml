@@ -1,0 +1,20 @@
+---
+- name: Create Minio group
+  ansible.builtin.group:
+    name: "{{ minio_group }}"
+    state: "{{ minio_package_state }}"
+
+- name: Create Minio user
+  ansible.builtin.user:
+    name: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    shell: "/bin/bash"
+
+- name: Create the Minio data storage directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ minio_user }}"
+    group: "{{ minio_group }}"
+    mode: "0750"
+  with_items: "{{ minio_server_datadirs }}"
