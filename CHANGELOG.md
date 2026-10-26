@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Fixed
+
+- `rustfs_server_bin` and `rustfs_client_bin` default to `/usr/local/bin/rustfs` and `/usr/local/bin/rc`, where the pgvillage packages install them (was `/usr/bin`).
+
+## v0.1.0
+
 First release of `pgvillage.rustfs`, based on `pgvillage.minio`.
 
 ### Breaking changes from `pgvillage.minio`
