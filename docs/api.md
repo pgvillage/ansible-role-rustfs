@@ -18,9 +18,9 @@ The role:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `rustfs_package_names` | `[rustfs, rc]` | Packages to install: the RustFS server and the RustFS client (rc). PgVillage builds these packages; upstream names the client package `rustfs-cli`. |
-| `rustfs_server_bin` | `/usr/bin/rustfs` | Path to the RustFS server binary, used by the systemd unit. |
-| `rustfs_client_bin` | `/usr/bin/rc` | Path to the RustFS client binary, used to create buckets. |
+| `rustfs_package_names` | `[rustfs, rustfs-cli]` | Packages to install: the RustFS server and the RustFS client (rc), built by PgVillage. The client is installed as `rustfs-cli`, not `rc`: on hosts with EPEL, `rc` installs EPEL's Plan 9 shell. |
+| `rustfs_server_bin` | `/usr/local/bin/rustfs` | Path to the RustFS server binary, used by the systemd unit. |
+| `rustfs_client_bin` | `/usr/local/bin/rc` | Path to the RustFS client binary, used to create buckets. |
 | `rustfs_service_name` | `rustfs` | Name of the RustFS server service. The role writes `/etc/systemd/system/<name>.service`, which overrides the unit shipped in the package. For ports below 1024 (`rustfs_server_addr`, `rustfs_server_console_addr`), it gets `CAP_NET_BIND_SERVICE`. |
 
 ## User and directories

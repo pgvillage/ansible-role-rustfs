@@ -13,7 +13,7 @@ Requirements
 ------------
 
 - systemd
-- The `rustfs` and `rc` packages, built by PgVillage, from a configured package repository.
+- The `rustfs` and `rustfs-cli` (rc) packages, built by PgVillage, from a configured package repository.
 - EL 9, EL 10, Ubuntu or Debian.
 
 Role Variables
