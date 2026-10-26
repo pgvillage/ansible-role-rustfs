@@ -1,0 +1,19 @@
+---
+- name: Create rustfs client config file
+  ansible.builtin.template:
+    src: rc.config.toml.j2
+    dest: "{{ rustfs_client_configdir }}/config.toml"
+    mode: "0600"
+    owner: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
+  vars:
+    endpoint: "{{ __rustfs_endpoint_defaults | combine(rustfs_endpoint) }}"
+
+- name: Create buckets with rc
+  become: true
+  become_user: "{{ rustfs_user }}"
+  ansible.builtin.command: "{{ rustfs_client_bin }} mb 'rustfs/{{ item }}' {{ rustfs_cli_options }}"
+  environment:
+    RC_CONFIG_DIR: "{{ rustfs_client_configdir }}"
+  loop: "{{ rustfs_buckets }}"
+  changed_when: false

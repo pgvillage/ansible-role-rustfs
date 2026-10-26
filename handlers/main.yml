@@ -1,6 +1,6 @@
 ---
-- name: Restart minio
+- name: Restart rustfs
   ansible.builtin.service:
-    name: "{{ __minio_service_name }}"
+    name: "{{ rustfs_service_name }}"
     state: restarted
     daemon_reload: true
