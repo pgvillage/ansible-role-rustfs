@@ -1,9 +1,10 @@
 ---
 - name: Flush handlers
   ansible.builtin.meta: flush_handlers
-- name: Enable and start the Minio or RustFS service
+
+- name: Enable and start the RustFS service
   ansible.builtin.service:
-    name: "{{ __minio_service_name }}"
+    name: "{{ rustfs_service_name }}"
     state: started
     enabled: true
     daemon_reload: true
@@ -13,8 +14,9 @@
     url: "{{ endpoint.url }}"
     validate_certs: false
     status_code: [200, 403]
-  register: minio_curl
+  register: rustfs_curl
+  until: rustfs_curl is succeeded
   retries: 60
   delay: 1
   vars:
-    endpoint: "{{ __minio_endpoint_defaults | combine(minio_endpoint) }}"
+    endpoint: "{{ __rustfs_endpoint_defaults | combine(rustfs_endpoint) }}"

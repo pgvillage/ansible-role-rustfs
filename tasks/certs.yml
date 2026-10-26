@@ -5,7 +5,7 @@
     owner: "{{ item.value.owner }}"
     path: "{{ item.value.path }}"
     mode: "0700"
-  loop: "{{ __minio_cert_folders | dict2items }}"
+  loop: "{{ rustfs_cert_folders | dict2items }}"
   loop_control:
     label: "{{ item.key }} -> {{ item.value.path }}"
 
@@ -15,11 +15,13 @@
     content: "{{ item.value.body }}"
     owner: "{{ item.value.owner | default('root') }}"
     mode: "0600"
-  loop: "{{ __minio_cert_files | dict2items }}"
+  loop: "{{ rustfs_cert_files | dict2items }}"
   loop_control:
     label: "{{ item.key }} -> {{ item.value.path }}"
-  when: minio_cert_from_string
-  notify: Restart minio
+  when:
+    - rustfs_cert_from_string
+    - item.value.path != ''
+  notify: Restart rustfs
 
 - name: Deploy certs from file
   ansible.builtin.copy:
@@ -27,11 +29,12 @@
     src: "{{ item.value.source }}"
     owner: "{{ item.value.owner | default('root') }}"
     mode: "0600"
-    remote_src: "{{ minio_cert_remote }}"
-  loop: "{{ __minio_cert_files | dict2items }}"
+    remote_src: "{{ rustfs_cert_remote }}"
+  loop: "{{ rustfs_cert_files | dict2items }}"
   loop_control:
     label: "{{ item.value.source | default(item.key) }} -> {{ item.value.path }}"
   when:
-    - not minio_cert_from_string
+    - not rustfs_cert_from_string
+    - item.value.path != ''
     - "item.value.source | default('') != ''"
-  notify: Restart minio
+  notify: Restart rustfs

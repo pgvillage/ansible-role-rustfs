@@ -1,20 +1,46 @@
 ---
-- name: Create Minio group
+- name: Create RustFS group
   ansible.builtin.group:
-    name: "{{ minio_group }}"
-    state: "{{ minio_package_state }}"
+    name: "{{ rustfs_group }}"
+    system: true
 
-- name: Create Minio user
+- name: Create RustFS user
   ansible.builtin.user:
-    name: "{{ minio_user }}"
-    group: "{{ minio_group }}"
+    name: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
     shell: "/bin/bash"
+    system: true
 
-- name: Create the Minio data storage directories
+- name: Get user info
+  ansible.builtin.getent:
+    database: passwd
+    key: "{{ rustfs_user }}"
+    split: ":"
+
+- name: Create the RustFS data storage directories
   ansible.builtin.file:
     path: "{{ item }}"
     state: directory
-    owner: "{{ minio_user }}"
-    group: "{{ minio_group }}"
+    owner: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
     mode: "0750"
-  with_items: "{{ minio_server_datadirs }}"
+  loop: "{{ rustfs_server_datadirs }}"
+
+- name: Create the RustFS working directory
+  ansible.builtin.file:
+    path: "{{ rustfs_server_workdir }}"
+    state: directory
+    owner: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
+    mode: "0750"
+
+- name: Create the RustFS client config directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ rustfs_user }}"
+    group: "{{ rustfs_group }}"
+    mode: "0700"
+  loop:
+    - "{{ rustfs_client_configdir | dirname }}"
+    - "{{ rustfs_client_configdir }}"
