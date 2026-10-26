@@ -1,0 +1,25 @@
+---
+name: molecule
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+jobs:
+  molecule:
+    name: Molecule
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install molecule
+        run: pip install ansible-core molecule "molecule-plugins[podman]"
+      - name: Run molecule test
+        run: molecule test
+        env:
+          # read the latest rpmbuilder release without hitting the anonymous rate limit
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PY_COLORS: "1"
+          ANSIBLE_FORCE_COLOR: "1"

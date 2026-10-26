@@ -39,6 +39,16 @@ Example Playbook
              rustfs_buckets:
                - backups
 
+Testing
+-------
+
+[Molecule](https://ansible.readthedocs.io/projects/molecule/) tests the role on Rocky Linux 9 in a systemd container with Podman.
+It installs the packages from the latest [rpmbuilder release](https://github.com/pgvillage-build/rpmbuilder/releases), with TLS from a test CA, and checks idempotency, the service, TLS and bucket creation.
+CI runs it on every pull request.
+
+    pip install ansible-core molecule "molecule-plugins[podman]"
+    molecule test
+
 License
 -------
 

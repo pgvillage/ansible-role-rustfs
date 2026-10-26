@@ -1,0 +1,72 @@
+---
+- name: Prepare
+  hosts: all
+  vars:
+    rpmbuilder_release: https://api.github.com/repos/pgvillage-build/rpmbuilder/releases/latest
+    rpm_names: [rustfs, rustfs-cli]
+    rpm_dir: /var/tmp/pgvillage-rpms
+    cert_dir: /etc/pki/rustfs
+  tasks:
+    - name: Install createrepo_c and openssl
+      ansible.builtin.dnf:
+        name: [createrepo_c, openssl]
+        state: present
+
+    - name: Read the latest rpmbuilder release
+      ansible.builtin.uri:
+        url: "{{ rpmbuilder_release }}"
+        headers: "{{ {'Authorization': 'Bearer ' ~ github_token} if github_token else {} }}"
+      register: release
+      vars:
+        github_token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') }}"
+
+    - name: Create the local package repo directory
+      ansible.builtin.file:
+        path: "{{ rpm_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download the RustFS packages
+      ansible.builtin.get_url:
+        url: "{{ item.browser_download_url }}"
+        dest: "{{ rpm_dir }}/{{ item.name }}"
+        mode: "0644"
+      loop: "{{ release.json.assets | selectattr('name', 'match', rpm_pattern) }}"
+      loop_control:
+        label: "{{ item.name }}"
+      vars:
+        rpm_pattern: >-
+          ^({{ rpm_names | join('|') }})-v?[0-9][^-]*-[0-9]+\.el{{
+          ansible_facts.distribution_major_version }}\.{{
+          ansible_facts.architecture }}\.rpm$
+
+    - name: Create the local package repo
+      ansible.builtin.command: createrepo_c {{ rpm_dir }}
+      changed_when: true
+
+    - name: Add the local package repo, so the role installs packages by name
+      ansible.builtin.yum_repository:
+        name: pgvillage-local
+        description: RustFS packages from pgvillage-build/rpmbuilder
+        baseurl: "file://{{ rpm_dir }}"
+        gpgcheck: false
+
+    - name: Create the certificate directory
+      ansible.builtin.file:
+        path: "{{ cert_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Create a test CA and a server certificate for the host's fqdn
+      ansible.builtin.shell: |
+        set -e
+        openssl req -x509 -newkey rsa:2048 -nodes -days 30 -subj /CN=molecule-ca \
+          -keyout ca.key -out root.crt
+        openssl req -newkey rsa:2048 -nodes -subj "/CN={{ ansible_facts.fqdn }}" \
+          -keyout server.key -out server.csr
+        echo "subjectAltName=DNS:{{ ansible_facts.fqdn }},DNS:localhost,IP:127.0.0.1" > server.ext
+        openssl x509 -req -in server.csr -CA root.crt -CAkey ca.key -CAcreateserial \
+          -days 30 -extfile server.ext -out server.crt
+      args:
+        chdir: "{{ cert_dir }}"
+        creates: "{{ cert_dir }}/server.crt"
