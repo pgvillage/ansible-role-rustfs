@@ -113,7 +113,7 @@ Defaults:
 
 ## Replacing Minio
 
-Minio and RustFS use the same ports, so they can't run side by side. When the role finds Minio (its service, systemd unit, init.d script, env file or packages), it fails unless `rustfs_remove_minio` is true.
+Minio and RustFS use the same ports, so they can't run side by side. When the role finds Minio (its service, systemd unit, init.d script, env file or server package), it fails unless `rustfs_remove_minio` is true.
 
 With `rustfs_remove_minio: true`, the role stops and disables Minio, and removes its systemd unit or init.d script, env file and packages. Its user, data directories and certificates are kept. To have RustFS serve Minio's data, set `rustfs_user` and `rustfs_server_datadirs` to Minio's user and data directories.
 
@@ -125,6 +125,8 @@ With `rustfs_remove_minio: true`, the role stops and disables Minio, and removes
 | `rustfs_minio_service_name` | `minio` | Name of the Minio service to stop and remove. |
 | `rustfs_minio_package_names` | `[minio, mcli]` | Minio packages to remove. |
 | `rustfs_minio_server_envfile` | `/etc/default/minio` | Minio env file to remove. |
+| `rustfs_minio_server_package` | `minio` | Minio server package. When installed, Minio is considered present; the client (`mcli`) alone doesn't conflict with RustFS. |
+| `rustfs_minio_unit_files` | `/etc/systemd/system/minio.service`, `/usr/local/lib/systemd/system/minio.service`, `/etc/init.d/minio` | Minio unit files and init.d script outside package management, to detect and remove. Units in `/usr/lib` are removed with the packages. |
 
 ## Migrating from the Minio role
 

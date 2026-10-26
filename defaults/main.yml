@@ -151,3 +151,15 @@ rustfs_minio_package_names:
   - minio
   - mcli
 rustfs_minio_server_envfile: /etc/default/minio
+
+# Minio server package: when installed, Minio is considered present (the
+# client in `rustfs_minio_package_names` doesn't conflict with RustFS)
+rustfs_minio_server_package: minio
+
+# Minio unit files and init.d script outside package management, detected
+# and removed with `rustfs_remove_minio`. Units in /usr/lib are removed with
+# the packages.
+rustfs_minio_unit_files:
+  - "/etc/systemd/system/{{ rustfs_minio_service_name }}.service"
+  - "/usr/local/lib/systemd/system/{{ rustfs_minio_service_name }}.service"
+  - "/etc/init.d/{{ rustfs_minio_service_name }}"
