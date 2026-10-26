@@ -1,27 +1,33 @@
 ---
 galaxy_info:
   namespace: pgvillage
-  role_name: minio
+  role_name: rustfs
   author: S. Mannem
   description: |
-    Minio is a tool to create a S3 bucket out of a filesystem.
-    Minio can do a whole lot more, but this is what Minio is to PgVillage.
-    This role installs and configures minio.
+    RustFS is an S3 compatible object storage server.
+    PgVillage uses it to store backups in S3 buckets on a filesystem.
+    This role installs and configures RustFS, and can replace Minio by RustFS.
   company: Nibble-IT
   license: PostgreSQL
-  min_ansible_version: "2.9"
+  min_ansible_version: "2.15"
 
   platforms:
     - name: EL
       versions:
-        - "7"
-    - name: Fedora
+        - "9"
+        - "10"
+    - name: Ubuntu
       versions:
-        - "27"
+        - jammy
+        - noble
+    - name: Debian
+      versions:
+        - bookworm
+        - trixie
 
   galaxy_tags:
     - system
-    - minio
+    - rustfs
     - storage
     - objectstorage
     - s3
