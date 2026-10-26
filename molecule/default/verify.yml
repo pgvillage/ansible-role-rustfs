@@ -30,7 +30,7 @@
     - name: List the buckets with rc, over TLS
       become: true
       become_user: rustfs
-      ansible.builtin.command: /usr/local/bin/rc ls rustfs
+      ansible.builtin.command: /usr/local/bin/rc ls rustfs --json
       environment:
         RC_CONFIG_DIR: "{{ getent_passwd.rustfs[4] }}/.config/rc"
       register: buckets
@@ -38,5 +38,7 @@
 
     - name: Check that the bucket was created
       ansible.builtin.assert:
-        that: "'mybucket' in buckets.stdout"
-        fail_msg: "mybucket not found in: {{ buckets.stdout }}"
+        that: "'mybucket' in bucket_names"
+        fail_msg: "mybucket not found in: {{ bucket_names }}"
+      vars:
+        bucket_names: "{{ (buckets.stdout | from_json)['items'] | map(attribute='key') | list }}"
