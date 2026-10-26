@@ -18,6 +18,9 @@
     that: ansible_facts.service_mgr == "systemd"
     fail_msg: "RustFS needs systemd, this host uses {{ ansible_facts.service_mgr }}"
 
+- name: Check for Minio, and remove it with rustfs_remove_minio
+  ansible.builtin.include_tasks: remove_minio.yml
+
 - name: Create rustfs user, group and directories
   ansible.builtin.include_tasks: create.yml
 - name: Install rustfs
