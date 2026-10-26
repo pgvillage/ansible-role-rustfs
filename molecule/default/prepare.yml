@@ -3,7 +3,7 @@
   hosts: all
   vars:
     rpmbuilder_release: https://api.github.com/repos/pgvillage-build/rpmbuilder/releases/latest
-    rpm_names: [rustfs, rustfs-cli]
+    rpmbuilder_gpgkey: https://raw.githubusercontent.com/pgvillage-build/rpmbuilder/main/gpg_pubkey.asc
     rpm_dir: /var/tmp/pgvillage-rpms
     cert_dir: /etc/pki/rustfs
   tasks:
@@ -26,19 +26,18 @@
         state: directory
         mode: "0755"
 
-    - name: Download the RustFS packages
-      ansible.builtin.get_url:
-        url: "{{ item.browser_download_url }}"
-        dest: "{{ rpm_dir }}/{{ item.name }}"
-        mode: "0644"
-      loop: "{{ release.json.assets | selectattr('name', 'match', rpm_pattern) }}"
-      loop_control:
-        label: "{{ item.name }}"
+    # The release has a tarball per distro, with a directory per architecture
+    - name: Download and extract the pgvillage rpms for this distro
+      ansible.builtin.unarchive:
+        src: "{{ asset.browser_download_url }}"
+        dest: "{{ rpm_dir }}"
+        remote_src: true
+        extra_opts: [--strip-components=1]
       vars:
-        rpm_pattern: >-
-          ^({{ rpm_names | join('|') }})-v?[0-9][^-]*-[0-9]+\.el{{
-          ansible_facts.distribution_major_version }}\.{{
-          ansible_facts.architecture }}\.rpm$
+        asset: >-
+          {{ release.json.assets | selectattr('name', 'equalto',
+             'pgvillage-rpms-' ~ release.json.tag_name ~ '-el'
+             ~ ansible_facts.distribution_major_version ~ '.tar.gz') | first }}
 
     - name: Create the local package repo
       ansible.builtin.command: createrepo_c {{ rpm_dir }}
@@ -47,9 +46,10 @@
     - name: Add the local package repo, so the role installs packages by name
       ansible.builtin.yum_repository:
         name: pgvillage-local
-        description: RustFS packages from pgvillage-build/rpmbuilder
+        description: pgvillage packages from pgvillage-build/rpmbuilder
         baseurl: "file://{{ rpm_dir }}"
-        gpgcheck: false
+        gpgcheck: true
+        gpgkey: "{{ rpmbuilder_gpgkey }}"
 
     - name: Create the certificate directory
       ansible.builtin.file:
