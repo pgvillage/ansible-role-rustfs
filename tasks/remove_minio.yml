@@ -1,41 +1,72 @@
 ---
-# Retire Minio in favour of RustFS. The Minio user, data directories and
-# certificates are kept: RustFS takes them over.
+# Minio and RustFS use the same ports, so they can't run side by side. Fail
+# when Minio is found and `rustfs_remove_minio` is false; otherwise stop and
+# remove Minio. Its user, data directories and certificates are kept, so
+# RustFS can take over the data (`rustfs_user`, `rustfs_server_datadirs`).
 
 - name: Gather service facts
   ansible.builtin.service_facts:
 
-- name: Stop and disable the Minio service
-  ansible.builtin.service:
-    name: "{{ minio_service_name }}"
-    state: stopped
-    enabled: false
-  when: >-
-    minio_service_name in ansible_facts.services or
-    (minio_service_name ~ '.service') in ansible_facts.services
+- name: Gather package facts
+  ansible.builtin.package_facts:
 
-- name: Remove the Minio server systemd config and init.d script
-  ansible.builtin.file:
+# systemd also reports units that are referenced but not installed
+- name: Check whether the Minio service exists
+  ansible.builtin.set_fact:
+    rustfs_minio_service_exists: >-
+      {{ ansible_facts.services | default({}) | dict2items
+         | selectattr('key', 'in', [rustfs_minio_service_name,
+                                    rustfs_minio_service_name ~ '.service'])
+         | rejectattr('value.status', 'eq', 'not-found')
+         | list | length > 0 }}
+
+- name: Look for Minio files
+  ansible.builtin.stat:
     path: "{{ item }}"
-    state: absent
-  loop:
-    - "/etc/systemd/system/{{ minio_service_name }}.service"
-    - "/etc/init.d/{{ minio_service_name }}"
-  register: minio_service_files
+  loop: "{{ rustfs_minio_unit_files + [rustfs_minio_server_envfile] }}"
+  register: rustfs_minio_files
 
-- name: Reload systemd
-  ansible.builtin.systemd:
-    daemon_reload: true
-  when:
-    - minio_service_files is changed
-    - ansible_facts.service_mgr == "systemd"
+- name: Check that Minio is not installed, or is to be removed
+  ansible.builtin.assert:
+    that: rustfs_remove_minio | bool or rustfs_minio_found | length == 0
+    fail_msg: >-
+      Minio is installed on this host ({{ rustfs_minio_found | join(', ') }}).
+      It uses the same ports as RustFS. Set rustfs_remove_minio to true to
+      replace Minio by RustFS; to keep Minio's data, also set rustfs_user and
+      rustfs_server_datadirs to Minio's user and data directories.
+    quiet: true
+  vars:
+    rustfs_minio_found: >-
+      {{ (rustfs_minio_files.results | selectattr('stat.exists')
+          | map(attribute='item') | list)
+         + ([rustfs_minio_service_name ~ ' service']
+            if rustfs_minio_service_exists | bool else [])
+         + ([rustfs_minio_server_package]
+            | select('in', ansible_facts.packages | default({})) | list) }}
 
-- name: Remove the Minio server envfile
-  ansible.builtin.file:
-    path: "{{ minio_server_envfile }}"
-    state: absent
+- name: Remove Minio (data directories are kept)
+  when: rustfs_remove_minio | bool
+  block:
+    - name: Stop and disable the Minio service
+      ansible.builtin.service:
+        name: "{{ rustfs_minio_service_name }}"
+        state: stopped
+        enabled: false
+      when: rustfs_minio_service_exists | bool
 
-- name: Remove minio packages
-  ansible.builtin.package:
-    name: "{{ minio_package_names }}"
-    state: absent
+    # systemd is reloaded when RustFS is started
+    - name: Remove the Minio server systemd config and init.d script
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ rustfs_minio_unit_files }}"
+
+    - name: Remove the Minio server envfile
+      ansible.builtin.file:
+        path: "{{ rustfs_minio_server_envfile }}"
+        state: absent
+
+    - name: Remove Minio packages
+      ansible.builtin.package:
+        name: "{{ rustfs_minio_package_names }}"
+        state: absent
