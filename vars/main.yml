@@ -1,1 +1,47 @@
 ---
+# Variables of the Minio role and what replaces them in this role. The role
+# fails when any `minio_*` variable is set, and shows this replacement.
+__rustfs_replaced_minio_vars:
+  minio_access_key: rustfs_access_key
+  minio_buckets: rustfs_buckets
+  minio_cert_files: rustfs_cert_files (other file names, see docs/api.md)
+  minio_cert_folders: rustfs_cert_folders
+  minio_cert_from_string: rustfs_cert_from_string
+  minio_cert_managed: rustfs_cert_managed
+  minio_cert_remote: rustfs_cert_remote
+  minio_cli_options: rustfs_cli_options (rc options)
+  minio_client_bin: rustfs_client_bin (rc)
+  minio_client_cert: rustfs_client_cert
+  minio_client_configdir: rustfs_client_configdir (rc)
+  minio_endpoint: rustfs_endpoint (keys url, access_key, secret_key, bucket_lookup)
+  minio_group: rustfs_group
+  minio_insecure: rustfs_insecure
+  minio_package_names: rustfs_minio_package_names (removed with rustfs_remove_minio)
+  minio_package_state: nothing (no longer used)
+  minio_rustfs_cert_files: rustfs_cert_files
+  minio_rustfs_cli_options: rustfs_cli_options
+  minio_rustfs_client_bin: rustfs_client_bin
+  minio_rustfs_client_ca_bundle: rustfs_client_ca_bundle
+  minio_rustfs_client_configdir: rustfs_client_configdir
+  minio_rustfs_env_extra: rustfs_server_env_extra
+  minio_rustfs_package_names: rustfs_package_names
+  minio_rustfs_server_bin: rustfs_server_bin
+  minio_rustfs_server_envfile: rustfs_server_envfile
+  minio_rustfs_service_name: rustfs_service_name
+  minio_rustfs_tls_path: rustfs_tls_path
+  minio_secret_key: rustfs_secret_key
+  minio_server_addr: rustfs_server_addr
+  minio_server_bin: nothing (Minio binary; see rustfs_server_bin)
+  minio_server_cert: rustfs_server_cert
+  minio_server_chain: rustfs_server_chain
+  minio_server_cluster_nodes: rustfs_server_cluster_nodes
+  minio_server_configdir: nothing (no longer used; see rustfs_tls_path)
+  minio_server_console_addr: rustfs_server_console_addr
+  minio_server_datadirs: rustfs_server_datadirs
+  minio_server_env_extra: rustfs_server_env_extra (RUSTFS_* variables)
+  minio_server_envfile: rustfs_minio_server_envfile (removed with rustfs_remove_minio)
+  minio_server_key: rustfs_server_key
+  minio_server_opts: nothing (no longer used; see rustfs_server_env_extra)
+  minio_service_name: rustfs_minio_service_name (removed with rustfs_remove_minio)
+  minio_use_rustfs: rustfs_remove_minio
+  minio_user: rustfs_user
