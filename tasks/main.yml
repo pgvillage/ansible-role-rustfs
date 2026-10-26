@@ -1,4 +1,7 @@
 ---
+- name: Check for variables of the Minio role
+  ansible.builtin.include_tasks: check_vars.yml
+
 - name: Checking for valid certs config
   ansible.builtin.assert:
     that:

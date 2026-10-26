@@ -1,0 +1,13 @@
+---
+- name: Check that no variables of the Minio role are set
+  ansible.builtin.assert:
+    that: rustfs_minio_vars | length == 0
+    fail_msg: >-
+      Variables of the Minio role are set, which this role does not use.
+      Replace them:
+      {% for var in rustfs_minio_vars %}{{ var }} -> {{
+      __rustfs_replaced_minio_vars.get(var, 'nothing (not used by this role)')
+      }}{{ '' if loop.last else ', ' }}{% endfor %}.
+    quiet: true
+  vars:
+    rustfs_minio_vars: "{{ query('ansible.builtin.varnames', '^minio_') | sort }}"
