@@ -8,7 +8,7 @@ rustfs_package_names:
 rustfs_server_bin: "/usr/local/bin/rustfs"
 
 # Path to the RustFS client binary (used to create buckets)
-rustfs_client_bin: "/usr/bin/rc"
+rustfs_client_bin: "/usr/local/bin/rc"
 
 # Name of the RustFS server service (systemd unit)
 rustfs_service_name: rustfs

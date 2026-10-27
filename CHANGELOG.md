@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- `rustfs_server_bin` and `rustfs_client_bin` default to `/usr/local/bin/rustfs` and `/usr/bin/rc`, where the pgvillage packages install them (was `/usr/bin`).
+- `rustfs_server_bin` and `rustfs_client_bin` default to `/usr/local/bin/rustfs` and `/usr/local/bin/rc`, where the pgvillage packages install them (was `/usr/bin`).
 - `rustfs_package_names` installs the client as `rustfs-cli` (was `rc`). On hosts with EPEL, `rc` installed EPEL's Plan 9 shell instead of the RustFS client.
 
 ## v0.1.0
