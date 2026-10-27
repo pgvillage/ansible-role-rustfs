@@ -30,7 +30,7 @@
     - name: List the buckets with rc, over TLS
       become: true
       become_user: rustfs
-      ansible.builtin.command: /usr/local/bin/rc ls rustfs --json
+      ansible.builtin.command: /usr/bin/rc ls rustfs --json
       environment:
         RC_CONFIG_DIR: "{{ getent_passwd.rustfs[4] }}/.config/rc"
       register: buckets
