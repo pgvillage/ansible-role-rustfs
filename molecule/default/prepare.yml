@@ -2,54 +2,21 @@
 - name: Prepare
   hosts: all
   vars:
-    rpmbuilder_release: https://api.github.com/repos/pgvillage-build/rpmbuilder/releases/latest
-    rpmbuilder_gpgkey: https://raw.githubusercontent.com/pgvillage-build/rpmbuilder/main/gpg_pubkey.asc
-    rpm_dir: /var/tmp/pgvillage-rpms
+    pgvillage_repo: https://repo.pgvillage.org/yum/v0.3.8
     cert_dir: /etc/pki/rustfs
   tasks:
-    - name: Install createrepo_c and openssl
+    - name: Install openssl
       ansible.builtin.dnf:
-        name: [createrepo_c, openssl]
+        name: openssl
         state: present
 
-    - name: Read the latest rpmbuilder release
-      ansible.builtin.uri:
-        url: "{{ rpmbuilder_release }}"
-        headers: "{{ {'Authorization': 'Bearer ' ~ github_token} if github_token else {} }}"
-      register: release
-      vars:
-        github_token: "{{ lookup('ansible.builtin.env', 'GITHUB_TOKEN') }}"
-
-    - name: Create the local package repo directory
-      ansible.builtin.file:
-        path: "{{ rpm_dir }}"
-        state: directory
-        mode: "0755"
-
-    # The release has a tarball per distro, with a directory per architecture
-    - name: Download and extract the pgvillage rpms for this distro
-      ansible.builtin.unarchive:
-        src: "{{ asset.browser_download_url }}"
-        dest: "{{ rpm_dir }}"
-        remote_src: true
-        extra_opts: [--strip-components=1]
-      vars:
-        asset: >-
-          {{ release.json.assets | selectattr('name', 'equalto',
-             'pgvillage-rpms-' ~ release.json.tag_name ~ '-el'
-             ~ ansible_facts.distribution_major_version ~ '.tar.gz') | first }}
-
-    - name: Create the local package repo
-      ansible.builtin.command: createrepo_c {{ rpm_dir }}
-      changed_when: true
-
-    - name: Add the local package repo, so the role installs packages by name
+    - name: Add the pgvillage package repo, so the role installs packages by name
       ansible.builtin.yum_repository:
-        name: pgvillage-local
-        description: pgvillage packages from pgvillage-build/rpmbuilder
-        baseurl: "file://{{ rpm_dir }}"
+        name: pgvillage
+        description: pgvillage packages
+        baseurl: "{{ pgvillage_repo }}/el$releasever/$basearch/"
         gpgcheck: true
-        gpgkey: "{{ rpmbuilder_gpgkey }}"
+        gpgkey: https://repo.pgvillage.org/yum/pgvillage.asc
 
     - name: Create the certificate directory
       ansible.builtin.file:

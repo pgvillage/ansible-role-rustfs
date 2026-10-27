@@ -42,8 +42,8 @@ Example Playbook
 Testing
 -------
 
-[Molecule](https://ansible.readthedocs.io/projects/molecule/) tests the role on Rocky Linux 9 in a systemd container with Podman.
-It installs the packages from the latest [rpmbuilder release](https://github.com/pgvillage-build/rpmbuilder/releases), with TLS from a test CA, and checks idempotency, the service, TLS and bucket creation.
+[Molecule](https://ansible.readthedocs.io/projects/molecule/) tests the role on Rocky Linux 9 and 10 in systemd containers with Podman.
+It installs the packages from the [pgvillage package repo](https://repo.pgvillage.org/yum/), with TLS from a test CA, and checks idempotency, the service, TLS and bucket creation.
 CI runs it on every pull request.
 
     pip install ansible-core molecule "molecule-plugins[podman]"

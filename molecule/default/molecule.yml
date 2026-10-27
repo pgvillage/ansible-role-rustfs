@@ -1,6 +1,6 @@
 ---
-# Tests the role on Rocky Linux 9 in a systemd container, with the RustFS
-# packages from the latest pgvillage-build/rpmbuilder release (see prepare.yml).
+# Tests the role on Rocky Linux 9 and 10 in systemd containers, with the RustFS
+# packages from the pgvillage package repo (see prepare.yml).
 dependency:
   name: galaxy
   options:
@@ -13,6 +13,14 @@ platforms:
     pre_build_image: true
     command: /usr/sbin/init
     systemd: always
+  - name: rustfs-el10
+    image: docker.io/geerlingguy/docker-rockylinux10-ansible:latest
+    pre_build_image: true
+    command: /usr/sbin/init
+    systemd: always
+    # systemd 257 fails to set up the unit's sandboxing (ProtectHome,
+    # PrivateTmp, ...) in an unprivileged container
+    privileged: true
 provisioner:
   name: ansible
 verifier:
