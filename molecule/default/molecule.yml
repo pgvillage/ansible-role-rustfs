@@ -1,6 +1,7 @@
 ---
-# Tests the role on Rocky Linux 9 and 10 in systemd containers, with the RustFS
-# packages from the pgvillage package repo (see prepare.yml).
+# Tests the role on Rocky Linux 9 and 10 and Ubuntu 22.04 and 24.04 in systemd
+# containers, with the RustFS packages from the pgvillage package repo (see
+# prepare.yml).
 dependency:
   name: galaxy
   options:
@@ -20,6 +21,19 @@ platforms:
     systemd: always
     # systemd 257 fails to set up the unit's sandboxing (ProtectHome,
     # PrivateTmp, ...) in an unprivileged container
+    privileged: true
+  - name: rustfs-jammy
+    image: docker.io/geerlingguy/docker-ubuntu2204-ansible:latest
+    pre_build_image: true
+    command: /lib/systemd/systemd
+    systemd: always
+  - name: rustfs-noble
+    image: docker.io/geerlingguy/docker-ubuntu2404-ansible:latest
+    pre_build_image: true
+    command: /lib/systemd/systemd
+    systemd: always
+    # systemd 255 fails to keep CAP_SYS_ADMIN for the unit's sandboxing in an
+    # unprivileged container
     privileged: true
 provisioner:
   name: ansible

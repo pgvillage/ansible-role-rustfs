@@ -2,21 +2,44 @@
 - name: Prepare
   hosts: all
   vars:
-    pgvillage_repo: https://repo.pgvillage.org/yum/v0.3.8
+    pgvillage_yum_repo: https://repo.pgvillage.org/yum/v0.3.8
+    pgvillage_apt_repo: https://repo.pgvillage.org/apt/v0.0.4
     cert_dir: /etc/pki/rustfs
   tasks:
     - name: Install openssl
-      ansible.builtin.dnf:
+      ansible.builtin.package:
         name: openssl
         state: present
 
-    - name: Add the pgvillage package repo, so the role installs packages by name
+    - name: Add the pgvillage yum repo, so the role installs packages by name
       ansible.builtin.yum_repository:
         name: pgvillage
         description: pgvillage packages
-        baseurl: "{{ pgvillage_repo }}/el$releasever/$basearch/"
+        baseurl: "{{ pgvillage_yum_repo }}/el$releasever/$basearch/"
         gpgcheck: true
         gpgkey: https://repo.pgvillage.org/yum/pgvillage.asc
+      when: ansible_facts.os_family == 'RedHat'
+
+    - name: Add the pgvillage apt repo
+      when: ansible_facts.os_family == 'Debian'
+      block:
+        - name: Download the pgvillage apt signing key
+          ansible.builtin.get_url:
+            url: "{{ pgvillage_apt_repo }}/pgvillage.asc"
+            dest: /etc/apt/keyrings/pgvillage.asc
+            mode: "0644"
+
+        - name: Add the pgvillage apt source
+          ansible.builtin.copy:
+            dest: /etc/apt/sources.list.d/pgvillage.list
+            content: >
+              deb [signed-by=/etc/apt/keyrings/pgvillage.asc]
+              {{ pgvillage_apt_repo }} {{ ansible_facts.distribution_release }} main
+            mode: "0644"
+
+        - name: Update the apt cache
+          ansible.builtin.apt:
+            update_cache: true
 
     - name: Create the certificate directory
       ansible.builtin.file:
