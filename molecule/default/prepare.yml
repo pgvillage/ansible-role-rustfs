@@ -23,6 +23,12 @@
     - name: Add the pgvillage apt repo
       when: ansible_facts.os_family == 'Debian'
       block:
+        - name: Create the apt keyrings directory
+          ansible.builtin.file:
+            path: /etc/apt/keyrings
+            state: directory
+            mode: "0755"
+
         - name: Download the pgvillage apt signing key
           ansible.builtin.get_url:
             url: "{{ pgvillage_apt_repo }}/pgvillage.asc"
@@ -47,14 +53,24 @@
         state: directory
         mode: "0700"
 
+    # With the extensions that Python 3.13 (Debian 13) requires when verifying
     - name: Create a test CA and a server certificate for the host's fqdn
       ansible.builtin.shell: |
         set -e
         openssl req -x509 -newkey rsa:2048 -nodes -days 30 -subj /CN=molecule-ca \
+          -addext basicConstraints=critical,CA:TRUE \
+          -addext keyUsage=critical,keyCertSign,cRLSign \
           -keyout ca.key -out root.crt
         openssl req -newkey rsa:2048 -nodes -subj "/CN={{ ansible_facts.fqdn }}" \
           -keyout server.key -out server.csr
-        echo "subjectAltName=DNS:{{ ansible_facts.fqdn }},DNS:localhost,IP:127.0.0.1" > server.ext
+        cat > server.ext <<EOF
+        subjectAltName=DNS:{{ ansible_facts.fqdn }},DNS:localhost,IP:127.0.0.1
+        basicConstraints=critical,CA:FALSE
+        keyUsage=critical,digitalSignature,keyEncipherment
+        extendedKeyUsage=serverAuth
+        authorityKeyIdentifier=keyid
+        subjectKeyIdentifier=hash
+        EOF
         openssl x509 -req -in server.csr -CA root.crt -CAkey ca.key -CAcreateserial \
           -days 30 -extfile server.ext -out server.crt
       args:
