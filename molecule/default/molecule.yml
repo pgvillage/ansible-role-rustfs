@@ -1,7 +1,7 @@
 ---
-# Tests the role on Rocky Linux 9 and 10 and Ubuntu 22.04 and 24.04 in systemd
-# containers, with the RustFS packages from the pgvillage package repo (see
-# prepare.yml).
+# Tests the role on Rocky Linux 9 and 10, Ubuntu 22.04 and 24.04 and Debian 12
+# and 13 in systemd containers, with the RustFS packages from the pgvillage
+# package repo (see prepare.yml).
 dependency:
   name: galaxy
   options:
@@ -33,6 +33,19 @@ platforms:
     command: /lib/systemd/systemd
     systemd: always
     # systemd 255 fails to keep CAP_SYS_ADMIN for the unit's sandboxing in an
+    # unprivileged container
+    privileged: true
+  - name: rustfs-bookworm
+    image: docker.io/geerlingguy/docker-debian12-ansible:latest
+    pre_build_image: true
+    command: /lib/systemd/systemd
+    systemd: always
+  - name: rustfs-trixie
+    image: docker.io/geerlingguy/docker-debian13-ansible:latest
+    pre_build_image: true
+    command: /lib/systemd/systemd
+    systemd: always
+    # systemd 257 fails to keep CAP_SYS_ADMIN for the unit's sandboxing in an
     # unprivileged container
     privileged: true
 provisioner:
