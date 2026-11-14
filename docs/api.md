@@ -65,6 +65,8 @@ The role:
 | `secret_key` | `{{ rustfs_secret_key }}` | Secret key. |
 | `bucket_lookup` | `auto` | Bucket addressing: `auto`, `path` or `dns`. |
 
+These defaults are `__rustfs_endpoint_defaults` in [`vars/main.yml`](../vars/main.yml). As a role variable it takes precedence over the inventory, so set `rustfs_endpoint` to change them.
+
 ## Certificates
 
 | Variable | Default | Description |

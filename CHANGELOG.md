@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- `__rustfs_endpoint_defaults` moved from `defaults/main.yml` to `vars/main.yml`, as it is internal. If you set it in your inventory, set `rustfs_endpoint` instead: role variables take precedence over the inventory, so the inventory value is no longer used.
+
 ### Fixed
 
 - `rustfs_package_names` installs the client as `rustfs-cli` (was `rc`). On hosts with EPEL, `rc` installed EPEL's Plan 9 shell instead of the RustFS client.
