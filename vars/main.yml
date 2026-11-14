@@ -45,3 +45,11 @@ __rustfs_replaced_minio_vars:
   minio_service_name: rustfs_minio_service_name (removed with rustfs_remove_minio)
   minio_use_rustfs: rustfs_remove_minio
   minio_user: rustfs_user
+
+# Internal: default client endpoint config, merged with `rustfs_endpoint`.
+# Role variable, so an inventory can't override it: set `rustfs_endpoint` instead.
+__rustfs_endpoint_defaults:
+  url: "https://{{ ansible_facts.fqdn }}:{{ rustfs_server_addr.split(':')[-1] }}"
+  access_key: "{{ rustfs_access_key }}"
+  secret_key: "{{ rustfs_secret_key }}"
+  bucket_lookup: auto

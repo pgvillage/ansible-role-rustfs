@@ -52,17 +52,10 @@ rustfs_server_env_extra: ""
 rustfs_access_key: "AWSKEY"
 rustfs_secret_key: "AWSSECRET"
 
-# Internal: default client endpoint config, merged with `rustfs_endpoint`
-__rustfs_endpoint_defaults:
-  url: "https://{{ ansible_facts.fqdn }}:{{ rustfs_server_addr.split(':')[-1] }}"
-  access_key: "{{ rustfs_access_key }}"
-  secret_key: "{{ rustfs_secret_key }}"
-  bucket_lookup: auto
-
 # Overrides for the client endpoint config (keys: url, access_key, secret_key,
 # bucket_lookup: `auto`, `path` or `dns`). Merged on top of
-# `__rustfs_endpoint_defaults` and used for the rc `rustfs` alias and for the
-# startup health check.
+# `__rustfs_endpoint_defaults` in vars/main.yml and used for the rc `rustfs`
+# alias and for the startup health check.
 rustfs_endpoint: {}
 
 # Buckets to create (with rc) after RustFS has started
